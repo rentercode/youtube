@@ -1,0 +1,319 @@
+
+
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Pro Max 2026</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root { --bg: #ffffff; --text: #0f0f0f; --red: #ff0000; --hover: #f2f2f2; --border: #e5e5e5; --live: #ff0000; }
+        .dark { --bg: #0f0f0f; --text: #ffffff; --hover: #272727; --border: #3f3f3f; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+        body { background: var(--bg); color: var(--text); padding-top: 56px; transition: 0.2s; min-height: 100vh; overflow-x: hidden; }
+
+        /* HEADER */
+        header { position: fixed; top: 0; width: 100%; height: 56px; background: var(--bg); display: flex; 
+                 justify-content: space-between; align-items: center; padding: 0 16px; z-index: 2000; border-bottom: 1px solid var(--border); }
+        .logo { display: flex; align-items: center; gap: 5px; cursor: pointer; color: var(--red); font-weight: 900; font-size: 20px; }
+        
+        /* LAYOUT */
+        nav { width: 240px; height: 100vh; position: fixed; padding: 10px; border-right: 1px solid var(--border); background: var(--bg); z-index: 1000; }
+        .nav-item { display: flex; align-items: center; padding: 12px; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+        .nav-item:hover { background: var(--hover); }
+        .nav-item i { margin-right: 20px; }
+
+        main { margin-left: 240px; padding: 20px; width: calc(100% - 240px); min-height: calc(100vh - 56px); }
+        .page { display: none; animation: fadeIn 0.3s ease; }
+        .page.active { display: block; }
+
+        /* VIDEO CARDS */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .v-card { cursor: pointer; position: relative; }
+        .thumb-box { width: 100%; aspect-ratio: 16/9; background: #222; border-radius: 12px; overflow: hidden; position: relative; }
+        .thumb-box video, .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .live-badge { position: absolute; top: 8px; left: 8px; background: var(--live); color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; animation: blink 1s infinite; z-index: 10; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+        /* WATCH PAGE */
+        .watch-grid { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
+        #mainPlayer { width: 100%; border-radius: 12px; background: #000; aspect-ratio: 16/9; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+
+        /* CHAT & COMMENTS */
+        #chatBox { border: 1px solid var(--border); border-radius: 12px; height: 500px; display: none; flex-direction: column; background: var(--bg); }
+        #chatMsgs { flex: 1; overflow-y: auto; padding: 15px; font-size: 14px; display: flex; flex-direction: column; gap: 10px; }
+        .comment-item { display: flex; gap: 12px; margin-bottom: 15px; }
+
+        /* BUTTONS & MODALS */
+        .btn { padding: 10px 20px; border-radius: 25px; border: none; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+        .btn-red { background: var(--red); color: white; }
+        .btn-gray { background: var(--hover); color: var(--text); }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; align-items: center; justify-content: center; }
+        .modal-content { background: var(--bg); padding: 30px; border-radius: 20px; width: 350px; text-align: center; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 1100px) { .watch-grid { grid-template-columns: 1fr; } nav { display: none; } main { margin-left: 0; width: 100%; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo" onclick="showP('home')"><i class="material-icons" style="font-size:32px">play_circle_filled</i>YouTube</div>
+    <div style="display:flex; gap:15px; align-items:center;">
+        <button class="btn btn-red" onclick="openModal()"><i class="material-icons">sensors</i> LIVE</button>
+        <i class="material-icons" onclick="document.body.classList.toggle('dark')" style="cursor:pointer">dark_mode</i>
+        <div onclick="showP('profile')" style="width:36px; height:36px; border-radius:50%; background:linear-gradient(45deg, #6200ea, #03dac6); color:white; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold;">U</div>
+    </div>
+</header>
+
+<div style="display:flex;">
+    <nav>
+        <div class="nav-item" onclick="showP('home')"><i class="material-icons">home</i> Asosiy</div>
+        <div class="nav-item" onclick="showP('profile')"><i class="material-icons">account_circle</i> Kanalim</div>
+        <hr style="margin:15px 0; border:none; border-top:1px solid var(--border)">
+        <div style="padding:10px; font-size:14px;">Obunachilar: <b id="sideSubs">1.2M</b></div>
+    </nav>
+
+    <main>
+        <div id="home" class="page active">
+            <div class="grid" id="mainFeed"></div>
+        </div>
+
+        <div id="profile" class="page">
+            <div style="padding:40px; border-bottom:1px solid var(--border); text-align:center; margin-bottom:20px;">
+                <div style="width:100px; height:100px; border-radius:50%; background:linear-gradient(45deg, #6200ea, #03dac6); margin:0 auto 20px;"></div>
+                <h1 id="pName">Mening Kanalim</h1>
+                <p style="color:gray">@user_2026 • <span id="pSubCount">1.2M</span> obunachi</p>
+            </div>
+            <h3>Mening videolarim</h3>
+            <div class="grid" id="myVideoGrid" style="margin-top:20px;"></div>
+        </div>
+
+        <div id="watch" class="page">
+            <div class="watch-grid">
+                <div class="player-section">
+                    <video id="mainPlayer" controls autoplay></video>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+                        <h2 id="vTitle">Video nomi</h2>
+                        <button id="stopLiveBtn" class="btn btn-red" style="display:none;" onclick="stopLive()">EFIRNI TUGATISH</button>
+                    </div>
+                    <div style="display:flex; gap:15px; margin-top:10px;">
+                        <button class="btn btn-gray" onclick="addLike()"><i class="material-icons">thumb_up</i> <span id="vLikes">0</span></button>
+                        <button class="btn btn-gray"><i class="material-icons">share</i></button>
+                    </div>
+                    <div style="margin-top:30px;">
+                        <h3 id="commHeader">Kommentariyalar</h3>
+                        <div style="display:flex; gap:15px; margin:20px 0;">
+                            <input type="text" id="cInput" placeholder="Fikr bildiring..." style="flex:1; background:transparent; border:none; border-bottom:1px solid var(--border); color:var(--text); outline:none; font-size:16px;">
+                            <button class="btn btn-red" onclick="postComment()">Yozish</button>
+                        </div>
+                        <div id="cList"></div>
+                    </div>
+                </div>
+                <div id="chatBox">
+                    <div style="padding:15px; border-bottom:1px solid var(--border); font-weight:bold; display:flex; justify-content:space-between;">
+                        Jonli Chat <span style="color:red" id="liveViewerCount">🔴 0</span>
+                    </div>
+                    <div id="chatMsgs"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="liveModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-bottom:20px;">Efirni boshlash</h3>
+        <button class="btn btn-gray" onclick="initLive('camera')" style="width:100%; margin-bottom:10px; padding:15px;"><i class="material-icons">videocam</i> Kamera</button>
+        <button class="btn btn-gray" onclick="initLive('screen')" style="width:100%; margin-bottom:15px; padding:15px;"><i class="material-icons">desktop_windows</i> Ekran ulashish</button>
+        <button onclick="closeModal()" style="border:none; background:none; color:gray; cursor:pointer;">Bekor qilish</button>
+    </div>
+</div>
+
+<script>
+    let botVideos = [];
+    let myVideos = JSON.parse(localStorage.getItem('saved_vids')) || [];
+    let activeStream = null;
+    let recorder = null;
+    let chunks = [];
+    let isLive = false;
+    let currentVidData = null;
+
+    const sources = [
+        "https://www.w3schools.com/html/mov_bbb.mp4",
+        "https://vjs.zencdn.net/v/oceans.mp4",
+        "https://media.w3.org/2010/05/bunny/trailer.mp4"
+    ];
+
+    // 1. Dasturni ishga tushirish
+    function init() {
+        for(let i=0; i<12; i++) {
+            botVideos.push({
+                id: 'bot_'+i,
+                title: "Bot Video #" + (i+1) + " - Qiziqarli kontent",
+                author: "Discovery",
+                likes: Math.floor(Math.random()*500),
+                comments: ["Zor!", "Gap yo'q", "Davom eting"],
+                img: `https://picsum.photos/seed/${i+100}/300/170`,
+                src: sources[i % sources.length]
+            });
+        }
+        renderHome();
+    }
+
+    function showP(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(id === 'home') renderHome();
+        if(id === 'profile') renderProfile();
+        window.scrollTo(0,0);
+    }
+
+    function renderHome() {
+        const feed = document.getElementById('mainFeed');
+        feed.innerHTML = "";
+
+        // AGAR EFIR BO'LSA 1-O'RINDA CHIQARISH
+        if(isLive) {
+            feed.innerHTML += `
+                <div class="v-card" onclick="showP('watch')">
+                    <div class="thumb-box">
+                        <div class="live-badge">LIVE</div>
+                        <video id="livePreview" muted autoplay style="width:100%; height:100%; object-fit:cover;"></video>
+                    </div>
+                    <h4 style="margin-top:10px">MENING JONLI EFIRIM</h4>
+                    <p style="font-size:13px; color:gray">Mening Kanalim • 🔴 Jonli</p>
+                </div>`;
+            setTimeout(() => { document.getElementById('livePreview').srcObject = activeStream; }, 50);
+        }
+
+        const all = [...myVideos, ...botVideos];
+        feed.innerHTML += all.map(v => createCard(v)).join('');
+    }
+
+    function renderProfile() {
+        const grid = document.getElementById('myVideoGrid');
+        grid.innerHTML = myVideos.length ? myVideos.map(v => createCard(v)).join('') : "<p style='color:gray'>Sizda hali videolar yo'q.</p>";
+    }
+
+    function createCard(v) {
+        return `
+            <div class="v-card" onclick="openVideo('${v.id}')">
+                <div class="thumb-box"><img src="${v.img}"></div>
+                <h4 style="margin-top:10px; font-size:15px;">${v.title}</h4>
+                <p style="font-size:12px; color:gray; margin-top:4px;">${v.author} • ${v.likes} layk</p>
+            </div>`;
+    }
+
+    // 2. LIVE TIZIMI
+    function openModal() { document.getElementById('liveModal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('liveModal').style.display = 'none'; }
+
+    async function initLive(type) {
+        closeModal();
+        try {
+            activeStream = (type === 'camera') 
+                ? await navigator.mediaDevices.getUserMedia({video:true, audio:true})
+                : await navigator.mediaDevices.getDisplayMedia({video:true, audio:true});
+            
+            isLive = true;
+            chunks = [];
+            recorder = new MediaRecorder(activeStream);
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.start();
+
+            showP('watch');
+            const player = document.getElementById('mainPlayer');
+            player.srcObject = activeStream;
+            document.getElementById('vTitle').innerText = "MENING JONLI EFIRIM 🔴";
+            document.getElementById('stopLiveBtn').style.display = 'block';
+            document.getElementById('chatBox').style.display = 'flex';
+            
+            startBotChat();
+            renderHome();
+        } catch(e) { alert("Ruxsat berilmadi!"); }
+    }
+
+    function stopLive() {
+        isLive = false;
+        recorder.stop();
+        recorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'video/webm' });
+            const videoURL = URL.createObjectURL(blob);
+            
+            const newVid = {
+                id: 'my_' + Date.now(),
+                title: "Saqlangan Jonli Efir - " + new Date().toLocaleTimeString(),
+                author: "Mening Kanalim",
+                likes: 0,
+                comments: ["Efir uchun raxmat!", "Ajoyib bo'ldi"],
+                img: "https://picsum.photos/seed/"+Date.now()+"/300/170",
+                src: videoURL
+            };
+            
+            myVideos.unshift(newVid);
+            localStorage.setItem('saved_vids', JSON.stringify(myVideos));
+            if(activeStream) activeStream.getTracks().forEach(t => t.stop());
+            
+            alert("Efir muvaffaqiyatli saqlandi!");
+            showP('home');
+        };
+    }
+
+    // 3. VIDEO KO'RISH VA BOTLAR
+    function openVideo(id) {
+        currentVidData = [...myVideos, ...botVideos].find(x => x.id === id);
+        showP('watch');
+        const player = document.getElementById('mainPlayer');
+        player.srcObject = null;
+        player.src = currentVidData.src;
+        document.getElementById('vTitle').innerText = currentVidData.title;
+        document.getElementById('vLikes').innerText = currentVidData.likes;
+        document.getElementById('stopLiveBtn').style.display = 'none';
+        document.getElementById('chatBox').style.display = 'none';
+        renderComments();
+    }
+
+    function renderComments() {
+        const list = document.getElementById('cList');
+        document.getElementById('commHeader').innerText = currentVidData.comments.length + " ta fikr";
+        list.innerHTML = currentVidData.comments.map(c => `
+            <div class="comment-item">
+                <div style="width:32px; height:32px; border-radius:50%; background:#ccc;"></div>
+                <div><b style="font-size:13px;">@user_${Math.floor(Math.random()*100)}</b><p style="font-size:14px;">${c}</p></div>
+            </div>
+        `).reverse().join('');
+    }
+
+    function postComment() {
+        const inp = document.getElementById('cInput');
+        if(!inp.value.trim()) return;
+        currentVidData.comments.push(inp.value);
+        inp.value = "";
+        renderComments();
+    }
+
+    function addLike() {
+        currentVidData.likes++;
+        document.getElementById('vLikes').innerText = currentVidData.likes;
+    }
+
+    function startBotChat() {
+        const msgs = ["Daxshat!", "Salom!", "O'zbekistondan salom", "Gap yo'q", "Like bosilar", "Efir qachon tugaydi?", "🔥🔥🔥"];
+        const box = document.getElementById('chatMsgs');
+        const interval = setInterval(() => {
+            if(!isLive) return clearInterval(interval);
+            const m = msgs[Math.floor(Math.random()*msgs.length)];
+            box.innerHTML += `<div><b>Bot_User:</b> ${m}</div>`;
+            box.scrollTop = box.scrollHeight;
+            document.getElementById('liveViewerCount').innerText = "🔴 " + Math.floor(Math.random()*2000);
+        }, 2500);
+    }
+
+    init();
+</script>
+</body>
+</html>
